@@ -1,0 +1,14 @@
+version: '3'
+services:
+  nuxt-app:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    ports:
+      - "${NGINX_PORT}:3000"
+    environment:
+      NODE_ENV: "${NODE_ENV}"
+      BASE_URL: "${BASE_URL}"
+    volumes:
+      - .:/app
+    restart: always
