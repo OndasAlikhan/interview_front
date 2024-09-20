@@ -5,18 +5,46 @@
       <s-card-description>Выберите интересующую вас тему</s-card-description>
     </s-card-header>
     <s-card-content>
-      <s-select-root autocomplete @update:modelValue="onTopicSelect">
-        <s-select-trigger>
-          <s-select-value placeholder="Выбрать"></s-select-value>
-        </s-select-trigger>
-        <s-select-content>
-          <s-select-group>
-            <s-select-item v-for="category in categories?.data" :value="category.id">
-              {{ category.name }}
-            </s-select-item>
-          </s-select-group>
-        </s-select-content>
-      </s-select-root>
+      <s-popover v-model:open="open">
+        <s-popover-trigger as-child>
+          <s-button
+              variant="outline"
+              role="combobox"
+              :aria-expanded="open"
+              class="w-[200px] justify-between"
+          >
+            Выбрать
+            <CaretSortIcon class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </s-button>
+        </s-popover-trigger>
+        <s-popover-content class="w-[200px] p-0">
+          <s-command>
+            <s-command-input class="h-9" placeholder="Поиск..." />
+            <s-command-empty>Нет результата.</s-command-empty>
+            <s-command-list>
+              <s-command-group>
+                <s-command-item
+                    v-for="category in categories?.data || []"
+                    :key="category.id"
+                    :value="category.id"
+                    @select="(ev) => {
+                      onTopicSelect(ev.detail.value)
+                      open = false
+                    }"
+                >
+                  {{ category.name }}
+                  <CheckIcon
+                      :class="cn(
+                  'ml-auto h-4 w-4',
+                  value === category.id ? 'opacity-100' : 'opacity-0',
+                )"
+                  />
+                </s-command-item>
+              </s-command-group>
+            </s-command-list>
+          </s-command>
+        </s-popover-content>
+      </s-popover>
     </s-card-content>
   </s-card>
   <s-card v-if="questions.length" class="mt-5">
@@ -33,13 +61,17 @@
   </s-card>
 </template>
 <script lang="ts" setup>
+import { CaretSortIcon, CheckIcon } from '@radix-icons/vue'
+import {cn} from "~/lib/utils";
 
 const questions = ref([]);
+const open = ref(false)
+const value = ref();
 
 const { data: categories } = useAPI("/api/v1/categories");
+console.log("categories", categories.value);
 
 function onTopicSelect(value) {
-  console.log('cl', value)
   navigateTo(`/categories/${value}/quiz`)
 }
 </script>
