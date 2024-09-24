@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { useToast } from "~/components/ui/toast";
+import { useToast } from "~/components/ui/toast/use-toast";
 
 type RegisterPayload = {
   email: string;
@@ -20,7 +20,7 @@ type Me = {
 
 export const useAuthStore = defineStore("auth", () => {
   const router = useRouter();
-  const toast = useToast();
+  const { toast } = useToast();
 
   const authenticated = ref(false);
   const signInLoading = ref(false);
@@ -37,12 +37,12 @@ export const useAuthStore = defineStore("auth", () => {
         body: payload,
       });
 
-      if (data?.token) {
-        const token = useCookie("token");
-        token.value = data.token;
+      if (data?.access_token) {
+        const token = useCookie("accessToken");
+        token.value = data.access_token;
         authenticated.value = true;
 
-        toast.toast({
+        toast({
           variant: "default",
           description: "Вы успешно авторизовались",
         });
@@ -52,12 +52,12 @@ export const useAuthStore = defineStore("auth", () => {
     } catch (err: any) {
       console.error("err", err);
       if (err.response?._data?.message === "invalid login")
-        toast.toast({
+        toast({
           variant: "destructive",
           description: "Invalid email or password",
         });
       else
-        toast.toast({
+        toast({
           variant: "destructive",
           description: "Error on login, please try again later",
         });
@@ -78,30 +78,38 @@ export const useAuthStore = defineStore("auth", () => {
         },
       });
 
-      if (data?.token) {
-        const token = useCookie("token");
-        token.value = data.token;
+
+      if (data?.access_token) {
+        const token = useCookie("accessToken");
+        console.log("token.value", token.value)
+        console.log("data", data.access_token)
+        token.value = data.access_token;
+        refreshCookie("accessToken")
+        console.log("token.value", token.value)
         authenticated.value = true;
 
-        toast.toast({
+        toast({
           variant: "default",
           description: "Вы успешно авторизовались",
         });
 
-        router.push("/");
+        await navigateTo("/");
       } else throw new Error("error getting token");
     } catch (err: any) {
       console.error("err", err);
-      if (err.response?._data?.message === "invalid login")
-        toast.toast({
+      if (err.response?._data?.message === "invalid login") {
+        toast({
           variant: "destructive",
-          description: "Invalid email or password",
+          description: "Не правильный email или пароль",
         });
-      else
-        toast.toast({
+      }
+      else {
+        console.log('in else')
+        toast({
           variant: "destructive",
-          description: "Error on login, please try again later",
+          description: "Ошибка при авторизации, попробуйте снова",
         });
+      }
     } finally {
       signInLoading.value = false;
     }
@@ -109,7 +117,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   const getMe = async () => {
     const { $api } = useNuxtApp();
-    const token = useCookie("token");
+    const token = useCookie("accessToken");
     try {
       const { data }: any = await $api(`/api/v1/auth`, {
         method: "get",
@@ -118,7 +126,7 @@ export const useAuthStore = defineStore("auth", () => {
       authenticated.value = true;
     } catch (err: any) {
       if (err?.status === 401) {
-        const token = useCookie("token");
+        const token = useCookie("accessToken");
         authenticated.value = false;
         me.value = undefined;
         token.value = undefined;
@@ -127,11 +135,11 @@ export const useAuthStore = defineStore("auth", () => {
   };
 
   const logUserOut = () => {
-    const token = useCookie("token");
+    const token = useCookie("accessToken");
     authenticated.value = false;
     me.value = undefined;
     token.value = undefined;
-    toast.toast({
+    toast({
       variant: "default",
       description: "You have been logged out",
     });

@@ -1,6 +1,6 @@
 <template>
-  <section class="self-center w-full flex justify-center">
-    <s-card class="w-[450px] h-full">
+  <section class="w-full flex justify-center h-svh items-center">
+    <s-card class="max-w-[450px] w-full max-h-[336px] h-full" >
       <s-card-header>
         <s-card-title>Sign in</s-card-title>
         <s-card-description
@@ -41,8 +41,10 @@ import { storeToRefs } from "pinia"; // import storeToRefs helper hook from pini
 import { useAuthStore } from "~/store/useAuthStore"; // import the auth store we just created
 
 const { authenticateUser } = useAuthStore(); // use authenticateUser action from  auth store
-
 const { signInLoading } = storeToRefs(useAuthStore()); // make authenticated state reactive with storeToRefs
+definePageMeta({
+  layout: 'auth'
+})
 
 const user = ref({
   email: "",

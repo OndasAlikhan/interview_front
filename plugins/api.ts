@@ -1,11 +1,9 @@
 export default defineNuxtPlugin((nuxtApp) => {
   const config = useRuntimeConfig()
   const accessTokenCookie = useCookie('accessToken');
-  console.log('config.public.apiBase', config.public.apiBase)
   const api = $fetch.create({
     baseURL: config.public.apiBase,
     onRequest({ request, options, error }) {
-      console.log("REQUEST API", request, options.baseURL)
       if (accessTokenCookie.value) {
         const headers = options.headers ||= {}
         if (Array.isArray(headers)) {
