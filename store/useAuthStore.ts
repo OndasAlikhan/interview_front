@@ -81,13 +81,10 @@ export const useAuthStore = defineStore("auth", () => {
 
       if (data?.access_token) {
         const token = useCookie("accessToken");
-        console.log("token.value", token.value)
-        console.log("data", data.access_token)
         token.value = data.access_token;
-        refreshCookie("accessToken")
-        console.log("token.value", token.value)
+        const refreshToken = useCookie("refreshToken");
+        refreshToken.value = data.refresh_token;
         authenticated.value = true;
-
         toast({
           variant: "default",
           description: "Вы успешно авторизовались",
@@ -125,12 +122,12 @@ export const useAuthStore = defineStore("auth", () => {
       me.value = data;
       authenticated.value = true;
     } catch (err: any) {
-      if (err?.status === 401) {
-        const token = useCookie("accessToken");
-        authenticated.value = false;
-        me.value = undefined;
-        token.value = undefined;
-      }
+      // if (err?.status === 401) {
+      //   const token = useCookie("accessToken");
+      //   authenticated.value = false;
+      //   me.value = undefined;
+      //   token.value = undefined;
+      // }
     }
   };
 
